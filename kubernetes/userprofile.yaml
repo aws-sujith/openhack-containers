@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-profile-deployment
+  namespace: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-profile
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5 
+  template:
+    metadata:
+      labels:
+        app: user-profile
+    spec:
+      containers:
+      - name: user-java
+        image: hacker4acr.azurecr.io/user-profile:v1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-profile-service
+  namespace: api
+spec:
+  type: ClusterIP #type can be NodePort / LoadBalancer / ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: user-profile

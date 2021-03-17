@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripviewer-deployment
+  namespace: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tripviewer
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5 
+  template:
+    metadata:
+      labels:
+        app: tripviewer
+    spec:
+      containers:
+      - name: tripviewer
+        image: hacker4acr.azurecr.io/tripviewer:v1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+        env:
+        - name: TRIPS_API_ENDPOINT
+          value: "http://trips-service.api.svc.cluster.local"
+        - name: USERPROFILE_API_ENDPOINT
+          value: "http://user-profile-service.api.svc.cluster.local"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripviewer-service
+  namespace: web
+spec:
+  type: LoadBalancer #type can be NodePort / LoadBalancer / ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: tripviewer
