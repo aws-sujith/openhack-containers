@@ -21,6 +21,10 @@ spec:
       containers:
       - name: trips
         image: hacker4acr.azurecr.io/trips:v2
+        volumeMounts:
+        - name: secrets-store-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
         ports:
         - containerPort: 80
         resources:
@@ -28,6 +32,13 @@ spec:
             cpu: 250m
           limits:
             cpu: 500m
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: hacker4-azurekeyvault
 ---
 apiVersion: v1
 kind: Service
